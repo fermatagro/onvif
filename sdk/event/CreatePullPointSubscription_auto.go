@@ -6,10 +6,11 @@ package event
 
 import (
 	"context"
+
+	"github.com/fermatagro/onvif"
+	"github.com/fermatagro/onvif/event"
+	"github.com/fermatagro/onvif/sdk"
 	"github.com/juju/errors"
-	"github.com/use-go/onvif"
-	"github.com/use-go/onvif/sdk"
-	"github.com/use-go/onvif/event"
 )
 
 // Call_CreatePullPointSubscription forwards the call to dev.CallMethod() then parses the payload of the reply as a CreatePullPointSubscriptionResponse.

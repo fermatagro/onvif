@@ -1,6 +1,7 @@
 package onvif
 
 import (
+	"context"
 	"encoding/xml"
 	"errors"
 	"io/ioutil"
@@ -11,10 +12,10 @@ import (
 	"strings"
 
 	"github.com/beevik/etree"
-	"github.com/use-go/onvif/device"
-	"github.com/use-go/onvif/gosoap"
-	"github.com/use-go/onvif/networking"
-	wsdiscovery "github.com/use-go/onvif/ws-discovery"
+	"github.com/fermatagro/onvif/device"
+	"github.com/fermatagro/onvif/gosoap"
+	"github.com/fermatagro/onvif/networking"
+	wsdiscovery "github.com/fermatagro/onvif/ws-discovery"
 )
 
 // Xlmns XML Scheam
@@ -255,21 +256,30 @@ func (dev Device) getEndpoint(endpoint string) (string, error) {
 	return endpointURL, errors.New("target endpoint service not found")
 }
 
-// CallMethod functions call an method, defined <method> struct.
-// You should use Authenticate method to call authorized requests.
-func (dev Device) CallMethod(method interface{}) (*http.Response, error) {
+func (dev Device) discoverEndpoint(method interface{}) (string, error) {
 	pkgPath := strings.Split(reflect.TypeOf(method).PkgPath(), "/")
 	pkg := strings.ToLower(pkgPath[len(pkgPath)-1])
+	return dev.getEndpoint(pkg)
+}
 
-	endpoint, err := dev.getEndpoint(pkg)
+// CallMethod functions call an method, defined <method> struct.
+// You should use Authenticate method to call authorized requests.
+// Deprecated: use CallMethodContext instead
+func (dev Device) CallMethod(method interface{}) (*http.Response, error) {
+	return dev.CallMethodContext(context.Background(), method)
+}
+
+func (dev Device) CallMethodContext(ctx context.Context, method interface{}) (*http.Response, error) {
+	endpoint, err := dev.discoverEndpoint(method)
 	if err != nil {
 		return nil, err
 	}
-	return dev.callMethodDo(endpoint, method)
+
+	return dev.callMethodDo(ctx, endpoint, method)
 }
 
 // CallMethod functions call an method, defined <method> struct with authentication data
-func (dev Device) callMethodDo(endpoint string, method interface{}) (*http.Response, error) {
+func (dev Device) callMethodDo(ctx context.Context, endpoint string, method interface{}) (*http.Response, error) {
 	output, err := xml.MarshalIndent(method, "  ", "    ")
 	if err != nil {
 		return nil, err
@@ -288,5 +298,5 @@ func (dev Device) callMethodDo(endpoint string, method interface{}) (*http.Respo
 		soap.AddWSSecurity(dev.params.Username, dev.params.Password)
 	}
 
-	return networking.SendSoap(dev.params.HttpClient, endpoint, soap.String())
+	return networking.SendSoapContext(ctx, dev.params.HttpClient, endpoint, soap.String())
 }

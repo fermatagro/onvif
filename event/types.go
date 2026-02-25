@@ -1,8 +1,8 @@
 package event
 
 import (
-	"github.com/use-go/onvif/xsd"
-	"github.com/use-go/onvif/xsd/onvif"
+	"github.com/fermatagro/onvif/xsd"
+	"github.com/fermatagro/onvif/xsd/onvif"
 )
 
 //Address Alias
