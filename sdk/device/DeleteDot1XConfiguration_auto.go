@@ -6,11 +6,10 @@ package device
 
 import (
 	"context"
-
-	"github.com/fermatagro/onvif"
-	"github.com/fermatagro/onvif/device"
-	"github.com/fermatagro/onvif/sdk"
 	"github.com/juju/errors"
+	"github.com/fermatagro/onvif"
+	"github.com/fermatagro/onvif/sdk"
+	"github.com/fermatagro/onvif/device"
 )
 
 // Call_DeleteDot1XConfiguration forwards the call to dev.CallMethod() then parses the payload of the reply as a DeleteDot1XConfigurationResponse.
@@ -22,7 +21,7 @@ func Call_DeleteDot1XConfiguration(ctx context.Context, dev *onvif.Device, reque
 		}
 	}
 	var reply Envelope
-	if httpReply, err := dev.CallMethod(request); err != nil {
+	if httpReply, err := dev.CallMethodContext(ctx, request); err != nil {
 		return reply.Body.DeleteDot1XConfigurationResponse, errors.Annotate(err, "call")
 	} else {
 		err = sdk.ReadAndParse(ctx, httpReply, &reply, "DeleteDot1XConfiguration")

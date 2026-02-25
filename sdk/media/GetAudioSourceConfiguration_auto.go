@@ -6,11 +6,10 @@ package media
 
 import (
 	"context"
-
-	"github.com/fermatagro/onvif"
-	"github.com/fermatagro/onvif/media"
-	"github.com/fermatagro/onvif/sdk"
 	"github.com/juju/errors"
+	"github.com/fermatagro/onvif"
+	"github.com/fermatagro/onvif/sdk"
+	"github.com/fermatagro/onvif/media"
 )
 
 // Call_GetAudioSourceConfiguration forwards the call to dev.CallMethod() then parses the payload of the reply as a GetAudioSourceConfigurationResponse.
@@ -22,7 +21,7 @@ func Call_GetAudioSourceConfiguration(ctx context.Context, dev *onvif.Device, re
 		}
 	}
 	var reply Envelope
-	if httpReply, err := dev.CallMethod(request); err != nil {
+	if httpReply, err := dev.CallMethodContext(ctx, request); err != nil {
 		return reply.Body.GetAudioSourceConfigurationResponse, errors.Annotate(err, "call")
 	} else {
 		err = sdk.ReadAndParse(ctx, httpReply, &reply, "GetAudioSourceConfiguration")

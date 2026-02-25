@@ -6,11 +6,10 @@ package ptz
 
 import (
 	"context"
-
-	"github.com/fermatagro/onvif"
-	"github.com/fermatagro/onvif/ptz"
-	"github.com/fermatagro/onvif/sdk"
 	"github.com/juju/errors"
+	"github.com/fermatagro/onvif"
+	"github.com/fermatagro/onvif/sdk"
+	"github.com/fermatagro/onvif/ptz"
 )
 
 // Call_GotoHomePosition forwards the call to dev.CallMethod() then parses the payload of the reply as a GotoHomePositionResponse.
@@ -22,7 +21,7 @@ func Call_GotoHomePosition(ctx context.Context, dev *onvif.Device, request ptz.G
 		}
 	}
 	var reply Envelope
-	if httpReply, err := dev.CallMethod(request); err != nil {
+	if httpReply, err := dev.CallMethodContext(ctx, request); err != nil {
 		return reply.Body.GotoHomePositionResponse, errors.Annotate(err, "call")
 	} else {
 		err = sdk.ReadAndParse(ctx, httpReply, &reply, "GotoHomePosition")

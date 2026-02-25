@@ -6,11 +6,10 @@ package device
 
 import (
 	"context"
-
-	"github.com/fermatagro/onvif"
-	"github.com/fermatagro/onvif/device"
-	"github.com/fermatagro/onvif/sdk"
 	"github.com/juju/errors"
+	"github.com/fermatagro/onvif"
+	"github.com/fermatagro/onvif/sdk"
+	"github.com/fermatagro/onvif/device"
 )
 
 // Call_GetDynamicDNS forwards the call to dev.CallMethod() then parses the payload of the reply as a GetDynamicDNSResponse.
@@ -22,7 +21,7 @@ func Call_GetDynamicDNS(ctx context.Context, dev *onvif.Device, request device.G
 		}
 	}
 	var reply Envelope
-	if httpReply, err := dev.CallMethod(request); err != nil {
+	if httpReply, err := dev.CallMethodContext(ctx, request); err != nil {
 		return reply.Body.GetDynamicDNSResponse, errors.Annotate(err, "call")
 	} else {
 		err = sdk.ReadAndParse(ctx, httpReply, &reply, "GetDynamicDNS")

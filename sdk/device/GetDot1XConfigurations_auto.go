@@ -6,11 +6,10 @@ package device
 
 import (
 	"context"
-
-	"github.com/fermatagro/onvif"
-	"github.com/fermatagro/onvif/device"
-	"github.com/fermatagro/onvif/sdk"
 	"github.com/juju/errors"
+	"github.com/fermatagro/onvif"
+	"github.com/fermatagro/onvif/sdk"
+	"github.com/fermatagro/onvif/device"
 )
 
 // Call_GetDot1XConfigurations forwards the call to dev.CallMethod() then parses the payload of the reply as a GetDot1XConfigurationsResponse.
@@ -22,7 +21,7 @@ func Call_GetDot1XConfigurations(ctx context.Context, dev *onvif.Device, request
 		}
 	}
 	var reply Envelope
-	if httpReply, err := dev.CallMethod(request); err != nil {
+	if httpReply, err := dev.CallMethodContext(ctx, request); err != nil {
 		return reply.Body.GetDot1XConfigurationsResponse, errors.Annotate(err, "call")
 	} else {
 		err = sdk.ReadAndParse(ctx, httpReply, &reply, "GetDot1XConfigurations")
