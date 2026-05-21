@@ -1870,3 +1870,71 @@ type Date struct {
 	Month xsd.Int `xml:"onvif:Month"`
 	Day   xsd.Int `xml:"onvif:Day"`
 }
+
+// ImagingStatus20 — tt:ImagingStatus20
+type ImagingStatus20 struct {
+	FocusStatus20 *FocusStatus20           `xml:"FocusStatus20,omitempty"`
+	Extension     *ImagingStatus20Extension `xml:"Extension,omitempty"`
+}
+
+type ImagingStatus20Extension xsd.AnyType
+
+// FocusStatus20 — tt:FocusStatus20
+type FocusStatus20 struct {
+	Position   float64                `xml:"Position"`
+	MoveStatus MoveStatus             `xml:"MoveStatus"`
+	Error      string                 `xml:"Error,omitempty"`
+	Extension  *FocusStatus20Extension `xml:"Extension,omitempty"`
+}
+
+type FocusStatus20Extension xsd.AnyType
+
+// ImagingOptions20 — tt:ImagingOptions20
+type ImagingOptions20 struct {
+	BacklightCompensation *BacklightCompensationOptions20 `xml:"BacklightCompensation,omitempty"`
+	Brightness            *FloatRange                     `xml:"Brightness,omitempty"`
+	ColorSaturation       *FloatRange                     `xml:"ColorSaturation,omitempty"`
+	Contrast              *FloatRange                     `xml:"Contrast,omitempty"`
+	Exposure              *ExposureOptions20              `xml:"Exposure,omitempty"`
+	Focus                 *FocusOptions20                 `xml:"Focus,omitempty"`
+	IrCutFilterModes      []IrCutFilterMode               `xml:"IrCutFilterModes,omitempty"`
+	Sharpness             *FloatRange                     `xml:"Sharpness,omitempty"`
+	WideDynamicRange      *WideDynamicRangeOptions20      `xml:"WideDynamicRange,omitempty"`
+	WhiteBalance          *WhiteBalanceOptions20          `xml:"WhiteBalance,omitempty"`
+	Extension             *ImagingOptions20Extension      `xml:"Extension,omitempty"`
+}
+
+type BacklightCompensationOptions20 xsd.AnyType
+type ExposureOptions20 xsd.AnyType
+type WideDynamicRangeOptions20 xsd.AnyType
+type WhiteBalanceOptions20 xsd.AnyType
+type ImagingOptions20Extension xsd.AnyType
+
+// FocusOptions20 — tt:FocusOptions20
+type FocusOptions20 struct {
+	AutoFocusModes []AutoFocusMode         `xml:"AutoFocusModes,omitempty"`
+	DefaultSpeed   *FloatRange             `xml:"DefaultSpeed,omitempty"`
+	NearLimit      *FloatRange             `xml:"NearLimit,omitempty"`
+	FarLimit       *FloatRange             `xml:"FarLimit,omitempty"`
+	Extension      *FocusOptions20Extension `xml:"Extension,omitempty"`
+}
+
+type FocusOptions20Extension xsd.AnyType
+
+// MoveOptions20 — tt:MoveOptions20
+type MoveOptions20 struct {
+	Absolute   *AbsoluteFocusOptions   `xml:"Absolute,omitempty"`
+	Relative   *RelativeFocusOptions20 `xml:"Relative,omitempty"`
+	Continuous *ContinuousFocusOptions `xml:"Continuous,omitempty"`
+}
+
+type AbsoluteFocusOptions xsd.AnyType
+type RelativeFocusOptions20 xsd.AnyType
+type ContinuousFocusOptions xsd.AnyType
+
+// ImagingPreset — timg:ImagingPreset
+type ImagingPreset struct {
+	Token ReferenceToken `xml:"token,attr"`
+	Type  string         `xml:"type,attr"`
+	Name  Name           `xml:"Name"`
+}

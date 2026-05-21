@@ -1,4 +1,4 @@
-package imaging
+package Imaging
 
 import (
 	"github.com/fermatagro/onvif/xsd"
@@ -61,4 +61,50 @@ type SetCurrentPreset struct {
 	XMLName          string               `xml:"timg:SetCurrentPreset"`
 	VideoSourceToken onvif.ReferenceToken `xml:"timg:VideoSourceToken"`
 	PresetToken      onvif.ReferenceToken `xml:"timg:PresetToken"`
+}
+
+// Capabilities — timg:Capabilities
+type Capabilities struct {
+	ImageStabilization xsd.Boolean `xml:"ImageStabilization,attr"`
+	Presets            xsd.Boolean `xml:"Presets,attr"`
+}
+
+type GetServiceCapabilitiesResponse struct {
+	Capabilities Capabilities
+}
+
+type GetImagingSettingsResponse struct {
+	ImagingSettings onvif.ImagingSettings20
+}
+
+type SetImagingSettingsResponse struct {
+}
+
+type GetOptionsResponse struct {
+	ImagingOptions onvif.ImagingOptions20
+}
+
+type MoveResponse struct {
+}
+
+type GetMoveOptionsResponse struct {
+	MoveOptions onvif.MoveOptions20
+}
+
+type StopResponse struct {
+}
+
+type GetStatusResponse struct {
+	Status onvif.ImagingStatus20
+}
+
+type GetPresetsResponse struct {
+	Preset []onvif.ImagingPreset
+}
+
+type GetCurrentPresetResponse struct {
+	Preset *onvif.ImagingPreset `xml:"Preset,omitempty"`
+}
+
+type SetCurrentPresetResponse struct {
 }
