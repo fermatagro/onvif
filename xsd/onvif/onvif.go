@@ -1873,7 +1873,7 @@ type Date struct {
 
 // ImagingStatus20 — tt:ImagingStatus20
 type ImagingStatus20 struct {
-	FocusStatus20 *FocusStatus20           `xml:"FocusStatus20,omitempty"`
+	FocusStatus20 *FocusStatus20            `xml:"FocusStatus20,omitempty"`
 	Extension     *ImagingStatus20Extension `xml:"Extension,omitempty"`
 }
 
@@ -1881,9 +1881,9 @@ type ImagingStatus20Extension xsd.AnyType
 
 // FocusStatus20 — tt:FocusStatus20
 type FocusStatus20 struct {
-	Position   float64                `xml:"Position"`
-	MoveStatus MoveStatus             `xml:"MoveStatus"`
-	Error      string                 `xml:"Error,omitempty"`
+	Position   float64                 `xml:"Position"`
+	MoveStatus MoveStatus              `xml:"MoveStatus"`
+	Error      string                  `xml:"Error,omitempty"`
 	Extension  *FocusStatus20Extension `xml:"Extension,omitempty"`
 }
 
@@ -1912,10 +1912,10 @@ type ImagingOptions20Extension xsd.AnyType
 
 // FocusOptions20 — tt:FocusOptions20
 type FocusOptions20 struct {
-	AutoFocusModes []AutoFocusMode         `xml:"AutoFocusModes,omitempty"`
-	DefaultSpeed   *FloatRange             `xml:"DefaultSpeed,omitempty"`
-	NearLimit      *FloatRange             `xml:"NearLimit,omitempty"`
-	FarLimit       *FloatRange             `xml:"FarLimit,omitempty"`
+	AutoFocusModes []AutoFocusMode          `xml:"AutoFocusModes,omitempty"`
+	DefaultSpeed   *FloatRange              `xml:"DefaultSpeed,omitempty"`
+	NearLimit      *FloatRange              `xml:"NearLimit,omitempty"`
+	FarLimit       *FloatRange              `xml:"FarLimit,omitempty"`
 	Extension      *FocusOptions20Extension `xml:"Extension,omitempty"`
 }
 
@@ -1928,9 +1928,19 @@ type MoveOptions20 struct {
 	Continuous *ContinuousFocusOptions `xml:"Continuous,omitempty"`
 }
 
-type AbsoluteFocusOptions xsd.AnyType
-type RelativeFocusOptions20 xsd.AnyType
-type ContinuousFocusOptions xsd.AnyType
+type AbsoluteFocusOptions struct {
+	Position FloatRange  `xml:"Position"`
+	Speed    *FloatRange `xml:"Speed,omitempty"`
+}
+
+type RelativeFocusOptions20 struct {
+	Distance FloatRange  `xml:"Distance"`
+	Speed    *FloatRange `xml:"Speed,omitempty"`
+}
+
+type ContinuousFocusOptions struct {
+	Speed FloatRange `xml:"Speed"`
+}
 
 // ImagingPreset — timg:ImagingPreset
 type ImagingPreset struct {
