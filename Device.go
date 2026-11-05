@@ -4,7 +4,8 @@ import (
 	"context"
 	"encoding/xml"
 	"errors"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -105,7 +106,7 @@ func (dev *Device) GetDeviceParams() DeviceParams {
 }
 
 func readResponse(resp *http.Response) string {
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -146,19 +147,19 @@ func GetAvailableDevicesAtSpecificEthernetInterface(interfaceName string) ([]Dev
 	return nvtDevices, nil
 }
 
-func (dev *Device) getSupportedServices(resp *http.Response) error {
+// getSupportedServices: found is false without GetCapabilitiesResponse.
+func (dev *Device) getSupportedServices(resp *http.Response) (found bool, err error) {
+	defer resp.Body.Close()
 	doc := etree.NewDocument()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return false, err
 	}
-
-	resp.Body.Close()
 
 	if err := doc.ReadFromBytes(data); err != nil {
 		//log.Println(err.Error())
-		return err
+		return false, err
 	}
 
 	services := doc.FindElements("./Envelope/Body/GetCapabilitiesResponse/Capabilities/*/XAddr")
@@ -171,11 +172,66 @@ func (dev *Device) getSupportedServices(resp *http.Response) error {
 		dev.addEndpoint(j.Parent().Tag, j.Text())
 	}
 
-	return nil
+	return doc.FindElement("./Envelope/Body/GetCapabilitiesResponse") != nil, nil
+}
+
+// HTTPError is a non-200 GetCapabilities reply; Body is capped at 64 KiB.
+// Err is set when reading Body failed.
+type HTTPError struct {
+	StatusCode int
+	Body       []byte
+	Err        error
+}
+
+func (e *HTTPError) Error() string {
+	msg := "onvif: GetCapabilities: http " + strconv.Itoa(e.StatusCode)
+	if e.Err != nil {
+		msg += ": read body: " + e.Err.Error()
+	}
+	return msg
+}
+
+func (e *HTTPError) Unwrap() error { return e.Err }
+
+// ErrNoCapabilities: a 200 reply without GetCapabilitiesResponse.
+var ErrNoCapabilities = errors.New("onvif: reply has no GetCapabilitiesResponse")
+
+// NewDeviceContext is NewDevice with ctx and typed errors.
+func NewDeviceContext(ctx context.Context, params DeviceParams) (*Device, error) {
+	dev, resp, err := probeDevice(ctx, params)
+	if err != nil {
+		return nil, fmt.Errorf("onvif: GetCapabilities at %s: %w", params.Xaddr, err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		body, readErr := io.ReadAll(io.LimitReader(resp.Body, 64<<10))
+		resp.Body.Close()
+		return nil, &HTTPError{StatusCode: resp.StatusCode, Body: body, Err: readErr}
+	}
+	found, err := dev.getSupportedServices(resp)
+	if err != nil {
+		return nil, fmt.Errorf("onvif: parse GetCapabilities: %w", err)
+	}
+	if !found {
+		return nil, ErrNoCapabilities
+	}
+	return dev, nil
 }
 
 // NewDevice function construct a ONVIF Device entity
 func NewDevice(params DeviceParams) (*Device, error) {
+	dev, resp, err := probeDevice(context.Background(), params)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil, errors.New("camera is not available at " + params.Xaddr + " or it does not support ONVIF services")
+	}
+
+	if _, err := dev.getSupportedServices(resp); err != nil {
+		return nil, err
+	}
+
+	return dev, nil
+}
+
+func probeDevice(ctx context.Context, params DeviceParams) (*Device, *http.Response, error) {
 	dev := new(Device)
 	dev.params = params
 	dev.endpoints = make(map[string]string)
@@ -185,20 +241,8 @@ func NewDevice(params DeviceParams) (*Device, error) {
 		dev.params.HttpClient = new(http.Client)
 	}
 
-	getCapabilities := device.GetCapabilities{Category: "All"}
-
-	resp, err := dev.CallMethod(getCapabilities)
-
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, errors.New("camera is not available at " + dev.params.Xaddr + " or it does not support ONVIF services")
-	}
-
-	err = dev.getSupportedServices(resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return dev, nil
+	resp, err := dev.CallMethodContext(ctx, device.GetCapabilities{Category: "All"})
+	return dev, resp, err
 }
 
 func (dev *Device) addEndpoint(Key, Value string) {
